@@ -17,3 +17,6 @@
 ydict
 .DS_Store
 .env
+
+# Idea
+.idea/

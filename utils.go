@@ -25,7 +25,7 @@ var (
    ╚═╝   ╚═════╝ ╚═╝ ╚═════╝   ╚═╝   
 
 YDict V%s
-https://github.com/TimothyYe/ydict
+https://github.com/rockagen/ydict
 
 `
 )
@@ -34,6 +34,7 @@ func displayUsage() {
 	color.Cyan(logo, Version)
 	color.Cyan("Usage:")
 	color.Cyan("ydict <word(s) to query>        Query the word(s)")
+	color.Cyan("ydict -i                        Interaction mode")
 	color.Cyan("ydict -v <word(s) to query>     Query with speech")
 	color.Cyan("ydict -m <word(s) to query>     Query with more example sentences")
 	color.Cyan("ydict -q <word(s) to query>     Query with quiet mode, don't show spinner")
@@ -80,9 +81,9 @@ func loadEnv() {
 	proxy = os.Getenv("SOCKS5")
 }
 
-func parseArgs(args []string) ([]string, bool, bool, bool) {
+func parseArgs(args []string) ([]string, bool, bool, bool,bool) {
 	//match argument: -v or -m or -q
-	var withVoice, withMore, isQuiet bool
+	var withVoice, withMore, isQuiet, interaction bool
 	wordStartIndex := findWordStartIndex(args)
 	paramArray := args[:wordStartIndex]
 	if elementInStringArray(paramArray, "-m") {
@@ -97,7 +98,11 @@ func parseArgs(args []string) ([]string, bool, bool, bool) {
 		isQuiet = true
 	}
 
-	return args[wordStartIndex:], withVoice, withMore, isQuiet
+	if elementInStringArray(paramArray, "-i") {
+		interaction = true
+	}
+
+	return args[wordStartIndex:], withVoice, withMore, isQuiet, interaction
 }
 
 func findWordStartIndex(args []string) int {

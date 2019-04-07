@@ -21,7 +21,7 @@ var (
 	voiceURL = "https://dict.youdao.com/dictvoice?audio=%s&type=2"
 )
 
-func query(words []string, withVoice, withMore, isQuiet, isMulti bool) {
+func Query(words []string, withVoice, withMore, isQuiet, isMulti bool) {
 	var url string
 	var doc *goquery.Document
 	var voiceBody io.ReadCloser
@@ -110,8 +110,27 @@ func query(words []string, withVoice, withMore, isQuiet, isMulti bool) {
 			s.Find(".contentTitle > .search-js").Each(func(ii int, ss *goquery.Selection) {
 				meanings = append(meanings, ss.Text())
 			})
-			fmt.Printf("%s\n", color.GreenString(strings.Join(meanings, "; ")))
+
+			color.Green(strings.Join(meanings, "; "))
 		})
+
+		// Show English Dictionary
+		// Pronunciation
+		pron := doc.Find("#authDictTrans > h4 > span").Text()
+		if len(pron) > 0 {
+			fmt.Println()
+			color.Blue("新汉英大辞典:")
+			color.Green("\r\n    %s", pron)
+		}
+		authDictTrans := getAuthDictTrans(doc)
+		if len(authDictTrans) > 0 {
+			fmt.Println()
+			for i, trans := range authDictTrans {
+				color.Green(" %2d.%s", i+1, trans[0])
+				color.Magenta("    %s", trans[1])
+			}
+		}
+		fmt.Println()
 	} else {
 
 		// Check for typos
@@ -136,9 +155,11 @@ func query(words []string, withVoice, withMore, isQuiet, isMulti bool) {
 		color.Green(result)
 	}
 
-	// Show examples
+
 	sentences := getSentences(words, doc, isChinese, withMore)
 	if len(sentences) > 0 {
+		// Show examples
+		color.Blue("双语例句:")
 		fmt.Println()
 		for i, sentence := range sentences {
 			color.Green(" %2d.%s", i+1, sentence[0])
@@ -248,6 +269,22 @@ func getSentences(words []string, doc *goquery.Document, isChinese, withMore boo
 		})
 		if len(r) == 2 {
 			result = append(result, r)
+		}
+	})
+	return result
+}
+
+func getAuthDictTrans(doc *goquery.Document) [][]string {
+	result := [][]string{}
+
+	var tmp string
+	doc.Find("#authDictTrans > ul > li > ul > p").Each(func(i int, s *goquery.Selection) {
+		if text := strings.TrimSpace(s.Text()); text != "" {
+			if i&1 == 1 {
+				result = append(result, []string{tmp, text})
+			} else {
+				tmp = text
+			}
 		}
 	})
 	return result

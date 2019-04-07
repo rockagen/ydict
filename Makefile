@@ -1,35 +1,28 @@
-# Binary name
-BINARY=ydict
-# Builds the project
-build:
-		GO111MODULE=on go build -o ${BINARY} -ldflags "-X main.Version=${VERSION}"
-	  GO111MODULE=on go test -v
-# Installs our project: copies binaries
-install:
-		GO111MODULE=on go install
-release:
-		# Clean
-		go clean
-		rm -rf *.gz
-		# Build for mac
-		GO111MODULE=on go build -ldflags "-X main.Version=${VERSION}"
-		tar czvf ${BINARY}-mac64-${VERSION}.tar.gz ./${BINARY}
-		# Build for arm
-		go clean
-		CGO_ENABLED=0 GOOS=linux GOARCH=arm64 GO111MODULE=on go build -ldflags "-X main.Version=${VERSION}"
-		tar czvf ${BINARY}-arm64-${VERSION}.tar.gz ./${BINARY}
-		# Build for linux
-		go clean
-		CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -ldflags "-X main.Version=${VERSION}"
-		tar czvf ${BINARY}-linux64-${VERSION}.tar.gz ./${BINARY}
-		# Build for win
-		go clean
-		CGO_ENABLED=0 GOOS=windows GOARCH=amd64 GO111MODULE=on go build -ldflags "-X main.Version=${VERSION}"
-		tar czvf ${BINARY}-win64-${VERSION}.tar.gz ./${BINARY}.exe
-		go clean
-# Cleans our projects: deletes binaries
-clean:
-		go clean
-		rm -rf *.gz
+GO_CMD ?=go
+GOGET_CMD =${GO_CMD} get -u
+BIN_NAME := ydict
 
-.PHONY:  clean build
+
+build:
+	${GO_CMD} build -o ${BIN_NAME} -v
+
+install: build
+	install -d /usr/local/bin/
+	install -m 755 ./${BIN_NAME} /usr/local/bin/${BIN_NAME}
+
+clean:
+	rm -f ./${BIN_NAME}*
+
+# Cross compilation
+build-linux:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 ${GO_CMD} build -o ${BIN_NAME} -v
+
+build-osx:
+	CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 ${GO_CMD} build -o ${BIN_NAME}_osx -v
+
+build-all: build-linux build-osx
+
+help: 
+	@sed -nr "s/^([a-z\-]*):(.*)/\1/p" Makefile
+
+.PHONY: build install clean build-linux build-osx build-all
