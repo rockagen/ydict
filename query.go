@@ -155,7 +155,6 @@ func Query(words []string, withVoice, withMore, isQuiet, isMulti bool) {
 		color.Green(result)
 	}
 
-
 	sentences := getSentences(words, doc, isChinese, withMore)
 	if len(sentences) > 0 {
 		// Show examples
