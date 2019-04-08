@@ -6,7 +6,7 @@ BIN_NAME := ydict
 build:
 	${GO_CMD} build -o ${BIN_NAME} -v
 
-install: build
+install:
 	install -d /usr/local/bin/
 	install -m 755 ./${BIN_NAME} /usr/local/bin/${BIN_NAME}
 
